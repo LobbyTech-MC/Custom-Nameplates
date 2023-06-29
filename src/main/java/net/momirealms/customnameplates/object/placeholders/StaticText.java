@@ -15,11 +15,14 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.momirealms.customnameplates.object.emoji;
+package net.momirealms.customnameplates.object.placeholders;
 
-import org.bukkit.entity.Player;
+public record StaticText(String text, int value, StaticState staticState) {
 
-public interface ImageParser {
+    public enum StaticState {
 
-    String parse(Player player, String text);
+        LEFT,
+        MIDDLE,
+        RIGHT
+    }
 }

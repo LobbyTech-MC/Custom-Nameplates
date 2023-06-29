@@ -17,21 +17,21 @@
 
 package net.momirealms.customnameplates.listener;
 
-import net.momirealms.customnameplates.object.nameplate.mode.EntityTag;
+import net.momirealms.customnameplates.object.carrier.NamedEntityCarrier;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
-public record EntityTagListener(EntityTag entityTag) implements Listener {
+public record EntityTagListener(NamedEntityCarrier namedEntityCarrier) implements Listener {
 
     @EventHandler
     public void onSneak(PlayerToggleSneakEvent event) {
-        entityTag.onSneak(event.getPlayer(), event.isSneaking());
+        namedEntityCarrier.onSneak(event.getPlayer(), event.isSneaking());
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
-        entityTag.onRespawn(event.getPlayer());
+        namedEntityCarrier.onRespawn(event.getPlayer());
     }
 }

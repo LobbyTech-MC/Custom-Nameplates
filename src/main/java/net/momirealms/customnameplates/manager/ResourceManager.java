@@ -147,8 +147,7 @@ public class ResourceManager {
                 addCharToArray(jsonArray, simpleChar, jo_bg);
                 try {
                     FileUtils.copyFile(new File(plugin.getDataFolder(), "contents" + File.separator + "backgrounds" + File.separator + simpleChar.getFile()), new File(textures_file.getPath() + File.separatorChar + ConfigManager.backgrounds_folder_path.replace("\\", File.separator) + simpleChar.getFile()));
-                }
-                catch (IOException e){
+                } catch (IOException e){
                     AdventureUtils.consoleMessage("<red>[CustomNameplates] Error! Failed to copy backgrounds to resource pack.</red>");
                 }
             }
@@ -203,24 +202,29 @@ public class ResourceManager {
         for (int ascent : plugin.getPlaceholderManager().getDescent_fonts()) {
             String line;
             StringBuilder sb = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(plugin.getDataFolder(), "templates" + File.separator + "default.json")), StandardCharsets.UTF_8))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(plugin.getDataFolder(), "templates" + File.separator + (plugin.getVersionHelper().isVersionNewerThan1_20() ? "default1_20.json" : "default.json"))), StandardCharsets.UTF_8))) {
                 while ((line = reader.readLine()) != null) {
                     sb.append(line).append(System.lineSeparator());
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            File outPut = new File(plugin.getDataFolder(),
+                    "ResourcePack" +
+                            File.separator + "assets" +
+                            File.separator + ConfigManager.namespace +
+                            File.separator + "font" +
+                            File.separator + "ascent_" + ascent + ".json");
             try (BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(new File(plugin.getDataFolder(),
-                            "ResourcePack" +
-                                    File.separator + "assets" +
-                                    File.separator + ConfigManager.namespace +
-                                    File.separator + "font" +
-                                    File.separator + "ascent_" + ascent + ".json")), StandardCharsets.UTF_8))) {
+                    new OutputStreamWriter(new FileOutputStream(outPut), StandardCharsets.UTF_8))) {
                 writer.write(sb.toString().replace("\\\\", "\\").replace("%ascent%", String.valueOf(ascent)));
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+        if (!ConfigManager.enable1_20_Unicode && plugin.getVersionHelper().isVersionNewerThan1_20()) {
+            AdventureUtils.consoleMessage("<white>[CustomNameplates] For the moment decent unicode is not available on 1.20. You can enable support-1_20-unicodes in config.yml to ignore the limit.");
+            return;
         }
         for (int ascent : plugin.getPlaceholderManager().getDescent_unicode_fonts()) {
             String line;
@@ -240,6 +244,18 @@ public class ResourceManager {
                                     File.separator + "font" +
                                     File.separator + "unicode_ascent_" + ascent + ".json")), StandardCharsets.UTF_8))) {
                 writer.write(sb.toString().replace("\\\\", "\\").replace("%ascent%", String.valueOf(ascent)));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (ConfigManager.enable1_20_Unicode) {
+            try {
+                FileUtils.copyDirectory(new File(plugin.getDataFolder(), "unicodes"), new File(plugin.getDataFolder(),
+                        "ResourcePack" +
+                                File.separator + "assets" +
+                                File.separator + "minecraft" +
+                                File.separator + "textures" +
+                                File.separator + "font"));
             } catch (IOException e) {
                 e.printStackTrace();
             }

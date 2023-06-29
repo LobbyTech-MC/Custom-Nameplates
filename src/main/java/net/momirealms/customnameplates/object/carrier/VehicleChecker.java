@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.momirealms.customnameplates.object.nameplate.mode.armorstand;
+package net.momirealms.customnameplates.object.carrier;
 
 import net.momirealms.customnameplates.CustomNameplates;
 import net.momirealms.customnameplates.object.Function;
@@ -30,12 +30,13 @@ public class VehicleChecker extends Function {
 
     private final ConcurrentHashMap<Player, Entity> playersOnVehicle;
 
-    private final ArmorStandTag armorStandTag;
+    private final NamedEntityCarrier namedEntityCarrier;
 
-    private BukkitTask task;
+    private BukkitTask updatePosTask;
+    private BukkitTask vehicleCheckTask;
 
-    public VehicleChecker(ArmorStandTag armorStandTag) {
-        this.armorStandTag = armorStandTag;
+    public VehicleChecker(NamedEntityCarrier namedEntityCarrier) {
+        this.namedEntityCarrier = namedEntityCarrier;
         this.playersOnVehicle = new ConcurrentHashMap<>();
     }
 
@@ -47,17 +48,23 @@ public class VehicleChecker extends Function {
                 playersOnVehicle.put(all, vehicle);
             }
         }
-        this.task = Bukkit.getScheduler().runTaskTimerAsynchronously(CustomNameplates.getInstance(), () -> {
+        this.updatePosTask = Bukkit.getScheduler().runTaskTimerAsynchronously(CustomNameplates.getInstance(), () -> {
             for (Player inVehicle : playersOnVehicle.keySet()) {
-                if (!inVehicle.isOnline() || armorStandTag.getArmorStandManager(inVehicle) == null) continue;
-                armorStandTag.getArmorStandManager(inVehicle).teleport();
+                if (!inVehicle.isOnline() || namedEntityCarrier.getNamedEntityManager(inVehicle) == null) continue;
+                namedEntityCarrier.getNamedEntityManager(inVehicle).teleport();
             }
         }, 1, 1);
+        this.vehicleCheckTask = Bukkit.getScheduler().runTaskTimerAsynchronously(CustomNameplates.getInstance(), () -> {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                this.refresh(player);
+            }
+        },20,20);
     }
 
     @Override
     public void unload() {
-        this.task.cancel();
+        this.updatePosTask.cancel();
+        this.vehicleCheckTask.cancel();
         playersOnVehicle.clear();
     }
 
@@ -73,11 +80,11 @@ public class VehicleChecker extends Function {
     public void refresh(Player player) {
         Entity vehicle = player.getVehicle();
         if (playersOnVehicle.containsKey(player) && vehicle == null) {
-            armorStandTag.getArmorStandManager(player).teleport();
+            namedEntityCarrier.getNamedEntityManager(player).teleport();
             playersOnVehicle.remove(player);
         }
         if (!playersOnVehicle.containsKey(player) && vehicle != null) {
-            armorStandTag.getArmorStandManager(player).respawn();
+            namedEntityCarrier.getNamedEntityManager(player).respawn();
             playersOnVehicle.put(player, vehicle);
         }
     }
